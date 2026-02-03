@@ -100,12 +100,14 @@ public class MainCommands implements CommandExecutor, TabCompleter {
 		List<String> completions = new ArrayList<>();
 		
 		if (args.length == 1) {
+			// Temel komutlar - herkes görebilir
 			List<String> subCommands = new ArrayList<>(Arrays.asList("ekle", "stokekle", "ürünlerim"));
 			
-			if (sender.hasPermission("tuccar.reload")) {
+			// OP veya yetkili ise ek komutları ekle
+			if (sender.isOp() || sender.hasPermission("tuccar.reload")) {
 				subCommands.add("reload");
 			}
-			if (sender.hasPermission("tuccar.setnpc") || sender.isOp()) {
+			if (sender.isOp() || sender.hasPermission("tuccar.setnpc")) {
 				subCommands.add("belirle");
 			}
 			
