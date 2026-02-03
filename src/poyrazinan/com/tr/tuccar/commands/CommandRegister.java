@@ -6,7 +6,9 @@ import poyrazinan.com.tr.tuccar.commands.Main.MainCommands;
 public class CommandRegister {
 	
 	public CommandRegister() {
-		Tuccar.instance.getCommand("tüccar").setExecutor(new MainCommands(Tuccar.instance));
+		MainCommands mainCommands = new MainCommands(Tuccar.instance);
+		Tuccar.instance.getCommand("tüccar").setExecutor(mainCommands);
+		Tuccar.instance.getCommand("tüccar").setTabCompleter(mainCommands);
 	}
 
 }

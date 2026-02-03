@@ -1924,17 +1924,17 @@ Tuccar:
 confirmation:
   yesItem:
     slot: 11
-    material: lime_concrete
+    material: LIME_CONCRETE
     name: '&aKabul Et'
     lore:
     - ''
     - ' &8▪ &7İşlemi onayla!'
   noItem:
     slot: 15
-    material: red_concrete
+    material: RED_CONCRETE
     name: '&4Reddet'
     lore:
     - ''
     - ' &8▪ &7İşlemi iptal et!'
   fill:
-    material: gray_stained_glass_pane
+    material: GRAY_STAINED_GLASS_PANE

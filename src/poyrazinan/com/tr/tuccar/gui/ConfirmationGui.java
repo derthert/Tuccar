@@ -28,7 +28,7 @@ public class ConfirmationGui {
 			{
 				
 				int amount = storage.getBuyAmount();
-				ItemStack confirmItem = new ItemStack(Material.getMaterial(storage.getProduct().getItemMaterial()));
+				ItemStack confirmItem = new ItemStack(Material.getMaterial(storage.getProduct().getItemMaterial().toUpperCase()));
 				ItemMeta meta = confirmItem.getItemMeta();
 				
 				if (amount > confirmItem.getMaxStackSize())
@@ -107,8 +107,9 @@ public class ConfirmationGui {
 					gui.setItem(Tuccar.instance.getConfig().getInt("confirmation.noItem.slot"), no);
 				} else Bukkit.getServer().getConsoleSender().sendMessage(Tuccar.color("&4&lHATA &cConfig>confirmation>noItem>material kısmında hata!")); 
 				
+				// Async işlem bittikten sonra sync olarak envanteri aç
+				Bukkit.getScheduler().runTask(Tuccar.instance, () -> {player.openInventory(gui);});
 			});
-			Bukkit.getScheduler().runTask(Tuccar.instance, () -> {player.openInventory(gui);});
 		
 	}
 	

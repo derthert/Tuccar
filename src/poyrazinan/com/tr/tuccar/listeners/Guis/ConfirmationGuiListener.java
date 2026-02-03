@@ -42,15 +42,30 @@ public class ConfirmationGuiListener implements Listener {
 					Player player = (Player) e.getWhoClicked();
 					if ((e.getCurrentItem() == null) || (e.getCurrentItem().getType().equals(Material.AIR))) return;
 
-					ProductStorage item = confirmation.get(player.getName()).getProduct();
+					// Confirmation storage kontrolü
+					if (!confirmation.containsKey(player.getName())) {
+						player.closeInventory();
+						return;
+					}
+
+					ConfirmationStorage storage = confirmation.get(player.getName());
+					if (storage == null || storage.getProduct() == null) {
+						player.closeInventory();
+						return;
+					}
+
+					ProductStorage item = storage.getProduct();
 
 					int itemID = item.getID();
 
-					int buyAmount = confirmation.get(player.getName()).getBuyAmount();
+					int buyAmount = storage.getBuyAmount();
 
 					double price = buyAmount*item.getPrice();
 
-					if (e.getSlot() == Tuccar.instance.getConfig().getInt("confirmation.yesItem.slot")) {
+					int yesSlot = Tuccar.instance.getConfig().getInt("confirmation.yesItem.slot");
+					int noSlot = Tuccar.instance.getConfig().getInt("confirmation.noItem.slot");
+
+					if (e.getSlot() == yesSlot) {
 						if (DatabaseQueries.checkStock(itemID, buyAmount)) {
 
 							int emptySlots = getEmptySlotsAmount(player);
@@ -138,11 +153,12 @@ public class ConfirmationGuiListener implements Listener {
 						} else {
 							player.sendTitle(getLang.getText("Titles.errorConfirmation.title"), getLang.getText("Titles.errorConfirmation.subTitle"), 20, 3, 20); confirmation.remove(player.getName());
 						player.closeInventory();}
-					} else if (e.getSlot() == Tuccar.instance.getConfig().getInt("confirmation.noItem.slot")) {
+					} else if (e.getSlot() == noSlot) {
 						confirmation.remove(player.getName());
 						player.closeInventory();
 						player.sendTitle(getLang.getText("Titles.processCancelled.title"), getLang.getText("Titles.processCancelled.subTitle"), 20, 3, 20);
 					}
+					// Diğer slotlara tıklamayı görmezden gel (sadece yesSlot ve noSlot aktif)
 			}
 		}
 	}

@@ -12,13 +12,15 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.ItemStack;
 
 import poyrazinan.com.tr.tuccar.Tuccar;
+import poyrazinan.com.tr.tuccar.Utils.BuyItem;
 import poyrazinan.com.tr.tuccar.Utils.getLang;
-import poyrazinan.com.tr.tuccar.Utils.Storage.ConfirmationStorage;
 import poyrazinan.com.tr.tuccar.Utils.Storage.ProductStorage;
+import poyrazinan.com.tr.tuccar.Utils.api.EventReason;
+import poyrazinan.com.tr.tuccar.api.events.ProductRemoveEvent;
 import poyrazinan.com.tr.tuccar.database.DatabaseQueries;
-import poyrazinan.com.tr.tuccar.gui.ConfirmationGui;
 import poyrazinan.com.tr.tuccar.gui.PlayerProducts;
 
 public class PlayerProductsListener implements Listener {
@@ -79,19 +81,79 @@ public class PlayerProductsListener implements Listener {
 		}
 
 		ProductStorage selectedItem = items.get(tiklamaCalculator);
-		Material itemStack = Material.getMaterial(selectedItem.getItemMaterial().toUpperCase());
-
-		int buyAmount = calculateBuyAmount(e.getClick(), selectedItem, player, itemStack);
+		Material itemMaterial = Material.getMaterial(selectedItem.getItemMaterial().toUpperCase());
 
 		if (e.getClick() == ClickType.MIDDLE && plugin.getConfig().getBoolean("Settings.middleClickRePrice")) {
 			handleRePricing(player, selectedItem);
 			return;
 		}
 
-		player.closeInventory();
-		ConfirmationStorage storage = new ConfirmationStorage(selectedItem, buyAmount, true);
-		ConfirmationGuiListener.confirmation.put(player.getName(), storage);
-		ConfirmationGui.createGui(player, storage, e.getCurrentItem().getItemMeta().getDisplayName());
+		int withdrawAmount = calculateBuyAmount(e.getClick(), selectedItem, player, itemMaterial);
+		
+		// Direkt olarak ürünü çek (onay ekranı olmadan)
+		withdrawProduct(player, selectedItem, withdrawAmount, itemMaterial, sayfa);
+	}
+
+	/**
+	 * Ürünü direkt olarak oyuncuya verir ve stoktan düşer
+	 */
+	private void withdrawProduct(Player player, ProductStorage item, int amount, Material itemMaterial, String[] sayfa) {
+		// Stok kontrolü
+		if (!DatabaseQueries.checkStock(item.getID(), amount)) {
+			player.sendMessage(Tuccar.color(getLang.getText("Messages.couldntFindStock")));
+			return;
+		}
+
+		// Envanter boşluk kontrolü
+		int emptySlots = ConfirmationGuiListener.getEmptySlotsAmount(player);
+		int maxStackSize = itemMaterial.getMaxStackSize();
+		int maxCanHold = emptySlots * maxStackSize;
+
+		if (maxCanHold < amount) {
+			player.sendTitle(getLang.getText("Titles.notEnoughSpace.title"), 
+					getLang.getText("Titles.notEnoughSpace.subTitle"), 20, 40, 20);
+			return;
+		}
+
+		// Ürünü veritabanından düş
+		DatabaseQueries.removeProductCount(item.getID(), amount, item.getDataName(), item.getItemCategory(), item.getPrice());
+
+		// Event tetikle
+		Bukkit.getScheduler().runTask(Tuccar.instance, () -> {
+			ProductRemoveEvent productRemove = new ProductRemoveEvent(EventReason.CANCEL, item.getDataName(), item.getItemCategory(), item.getPrice());
+			Bukkit.getPluginManager().callEvent(productRemove);
+		});
+
+		// Ürünü oyuncuya ver
+		addItemToPlayer(amount, BuyItem.buyItem(item, maxStackSize), player);
+
+		// Başarı mesajı
+		player.sendTitle(getLang.getText("Titles.productWithdrawn.title"), 
+				getLang.getText("Titles.productWithdrawn.subTitle"), 20, 40, 20);
+
+		// GUI'yi yenile (stok bittiyse veya güncellendiyse görmesi için)
+		Bukkit.getScheduler().runTaskLater(Tuccar.instance, () -> {
+			int currentPage = Integer.valueOf(sayfa[sayfa.length-1]);
+			PlayerProducts.createGui(player, currentPage);
+		}, 5L);
+	}
+
+	/**
+	 * Ürünü oyuncunun envanterine ekler
+	 */
+	private void addItemToPlayer(int amount, ItemStack item, Player player) {
+		Bukkit.getScheduler().runTask(Tuccar.instance, () -> {
+			int remaining = amount;
+			int maxAmount = item.getMaxStackSize();
+
+			while (remaining > 0) {
+				int toGive = Math.min(remaining, maxAmount);
+				ItemStack toAdd = item.clone();
+				toAdd.setAmount(toGive);
+				player.getInventory().addItem(toAdd);
+				remaining -= toGive;
+			}
+		});
 	}
 
 	private int calculateClickIndex(int slot) {

@@ -20,22 +20,23 @@ Messages:
   reload: ' &6Tüccar &8▸ &aYenileme işlemi &2başarıyla &agerçekleştirildi.'
   help:
   - ''
-  - '&6 TÜCCAR SİSTEMİ:'
+  - '  &6&lTÜCCAR KOMUTLARI'
   - ''
-  - '&6 /tüccar ekle &d[Birim Fiyatı] <Stok Sayısı/El/Hepsi> &8▸ &7Tüccara ürün kayıt eder.'
-  - '&6 /tüccar stokekle &d<Stok Sayısı/El/Hepsi> &8▸ &7Tüccara stok ekler.'
-  - '&6 /tüccar ürünlerim &8▸ &7Tüccardaki ürünlerini gösterir.'
+  - '  &e/tüccar ekle [fiyat] &8- &7Eldeki ürünü satışa ekle'
+  - '  &e/tüccar stokekle &8- &7Mevcut ürüne stok ekle'
+  - '  &e/tüccar ürünlerim &8- &7Ürünlerini görüntüle'
+  - '  &e/tüccar reload &8- &7Configleri yenile &c(Yetkili)'
   - ''
-  - '&7 Tüccar menüsünden ürünlerini &Ciptal edip&7/&adüzenleyebilirsin.'
-  - '&d<değer> &8▸ &7Opsiyonel &8(zorunlu olmayan) &7verilerdir.'
-  - '&d[değer] &8▸ &cZorunlu &7girilmesi gereken verilerdir.'
 Titles:
   processCancelled:
     title: '&4Onay'
-    subTitle: '&cOnay verilmedi!'
+    subTitle: '&cİptal edildi!'
   processSuccess:
     title: '&2Onay'
     subTitle: '&aOnay alındı!'
+  productWithdrawn:
+    title: '&2Başarılı'
+    subTitle: '&aÜrün geri çekildi!'
   errorConfirmation:
     title: '&4Hata'
     subTitle: '&cSatın alınamadı.'

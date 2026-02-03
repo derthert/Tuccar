@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
@@ -32,8 +33,19 @@ public class BuyItem {
 			
 			String custom_data = Tuccar.instance.getConfig().getString("Tuccar." + product.getItemCategory() + ".items." + product.getDataName() + ".customitem");
 			
-			return CustomItemsAPI.getCustomItem(custom_data);
+			ItemStack customItem = CustomItemsAPI.getCustomItem(custom_data);
+			if (customItem != null) {
+				customItem.setAmount(amount);
+				return customItem;
+			}
 			
+		}
+		
+		// Material kontrolü
+		Material material = Material.getMaterial(product.getItemMaterial().toUpperCase());
+		if (material == null) {
+			Bukkit.getConsoleSender().sendMessage(Tuccar.color("&4[Tuccar] &cGeçersiz material: " + product.getItemMaterial()));
+			return new ItemStack(Material.STONE, amount); // Fallback
 		}
 		
 		List<String> newList = new ArrayList<String>();
@@ -41,24 +53,28 @@ public class BuyItem {
 			for (String string : product.getLore()) {
 	    		newList.add(string.replace("&", "§"));}
 		}
-    	ItemStack item = new ItemStack(Material.getMaterial(product.getItemMaterial().toUpperCase()), amount);
+    	ItemStack item = new ItemStack(material, amount);
     	String nms = Tuccar.getNMSVersion();
-		if (nms.contains("1_16") || nms.contains("1_15") || nms.contains("1_14") || nms.contains("1_13")) {
-			Material mat = Material.getMaterial(product.getItemMaterial());
-			if ((mat.equals(Material.SPLASH_POTION) || mat.equals(Material.POTION) || mat.equals(Material.LINGERING_POTION))
+    	
+    	// 1.13+ sürüm kontrolü (1.20, 1.21 dahil)
+		if (nms.contains("1_21") || nms.contains("1_20") || nms.contains("1_19") || nms.contains("1_18") || 
+			nms.contains("1_17") || nms.contains("1_16") || nms.contains("1_15") || nms.contains("1_14") || nms.contains("1_13")) {
+			if ((material.equals(Material.SPLASH_POTION) || material.equals(Material.POTION) || material.equals(Material.LINGERING_POTION))
 					&& (Tuccar.instance.getConfig().isSet("Tuccar." + product.getItemCategory() + ".items." + product.getDataName() + ".potionType")) ) {
 				PotionType type = null;
 				try {type = PotionType.valueOf(Tuccar.instance.getConfig().getString("Tuccar." + product.getItemCategory() + ".items." + product.getDataName() + ".potionType"));
-				} catch (NullPointerException ignored) {}
-				Potion potion = null;
-				if (product.getItemDamage() == 1 || product.getItemDamage() == 2)potion = new Potion(type, product.getItemDamage());
-				else {
-					potion = new Potion(type, 1);
-					potion.extend();
+				} catch (NullPointerException | IllegalArgumentException ignored) {}
+				if (type != null) {
+					Potion potion = null;
+					if (product.getItemDamage() == 1 || product.getItemDamage() == 2)potion = new Potion(type, product.getItemDamage());
+					else {
+						potion = new Potion(type, 1);
+						potion.extend();
+					}
+					if (material.equals(Material.SPLASH_POTION)) potion.setSplash(true);
+					item = potion.toItemStack(amount);
+					if (material.equals(Material.LINGERING_POTION)) item.setType(Material.LINGERING_POTION);
 				}
-				if (mat.equals(Material.SPLASH_POTION)) potion.setSplash(true);
-				item = potion.toItemStack(amount);
-				if (mat.equals(Material.LINGERING_POTION)) item.setType(Material.LINGERING_POTION);
 			}
 		}
     	

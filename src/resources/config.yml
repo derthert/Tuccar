@@ -1807,7 +1807,7 @@ Tuccar:
 confirmation:
   yesItem:
     slot: 11
-    material: stained_clay
+    material: STAINED_CLAY
     damage: 5
     name: '&aKabul Et'
     lore:
@@ -1815,12 +1815,12 @@ confirmation:
     - ' &8▪ &7İşlemi onayla!'
   noItem:
     slot: 15
-    material: stained_clay
+    material: STAINED_CLAY
     damage: 14
     name: '&4Reddet'
     lore:
     - ''
     - ' &8▪ &7İşlemi iptal et!'
   fill:
-    material: stained_glass_pane
+    material: STAINED_GLASS_PANE
     damage: 7

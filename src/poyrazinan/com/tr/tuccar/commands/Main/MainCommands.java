@@ -1,10 +1,15 @@
 package poyrazinan.com.tr.tuccar.commands.Main;
 
-import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import poyrazinan.com.tr.tuccar.Tuccar;
 import poyrazinan.com.tr.tuccar.Utils.getLang;
@@ -15,7 +20,7 @@ import poyrazinan.com.tr.tuccar.commands.selfProducts.selfProducts;
 import poyrazinan.com.tr.tuccar.commands.setNPC.setNpc;
 import poyrazinan.com.tr.tuccar.gui.CategorySelectionGUI;
 
-public class MainCommands implements CommandExecutor {
+public class MainCommands implements CommandExecutor, TabCompleter {
 
 	public Tuccar plugin;
 
@@ -88,6 +93,37 @@ public class MainCommands implements CommandExecutor {
 		for (String s : getLang.getLore("Messages.help")) {
 			sender.sendMessage(s);
 		}
+	}
+
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+		List<String> completions = new ArrayList<>();
+		
+		if (args.length == 1) {
+			List<String> subCommands = new ArrayList<>(Arrays.asList("ekle", "stokekle", "ürünlerim"));
+			
+			if (sender.hasPermission("tuccar.reload")) {
+				subCommands.add("reload");
+			}
+			if (sender.hasPermission("tuccar.setnpc") || sender.isOp()) {
+				subCommands.add("belirle");
+			}
+			
+			String input = args[0].toLowerCase();
+			completions = subCommands.stream()
+					.filter(s -> s.toLowerCase().startsWith(input))
+					.collect(Collectors.toList());
+		} else if (args.length == 2) {
+			if (args[0].equalsIgnoreCase("ekle")) {
+				completions.addAll(Arrays.asList("<fiyat>", "10", "100", "1000"));
+			} else if (args[0].equalsIgnoreCase("stokekle")) {
+				completions.addAll(Arrays.asList("el", "hepsi", "1", "32", "64"));
+			}
+		} else if (args.length == 3 && args[0].equalsIgnoreCase("ekle")) {
+			completions.addAll(Arrays.asList("el", "hepsi", "1", "32", "64"));
+		}
+		
+		return completions;
 	}
 
 }
