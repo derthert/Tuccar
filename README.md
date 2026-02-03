@@ -29,8 +29,6 @@
 
 ---
 
-> ⚠️ **Not:** Eklenti artık aktif olarak geliştirilmemektedir.
-
 > 💡 **İpucu:** 1.13 ve üzeri sürümlerde kullanıyorsanız, `.jar` dosyasını winrar ile açıp `1.16-config.yml` dosyasını mevcut `config.yml` dosyasıyla değiştirin!
 
 ---
