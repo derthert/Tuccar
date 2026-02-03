@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="img/usage.png" alt="Tuccar Banner" width="600"/>
-</p>
-
 <h1 align="center">🏪 Tüccar</h1>
 
 <p align="center">
