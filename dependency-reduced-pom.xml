@@ -32,6 +32,10 @@
           <artifactSet>
             <includes>
               <include>org.json:*:*:*</include>
+              <include>redis.clients:jedis:*:*</include>
+              <include>org.apache.commons:commons-pool2:*:*</include>
+              <include>com.zaxxer:HikariCP:*:*</include>
+              <include>org.slf4j:slf4j-api:*:*</include>
             </includes>
           </artifactSet>
         </configuration>
@@ -72,18 +76,6 @@
       <artifactId>VaultAPI</artifactId>
       <version>1.7</version>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>redis.clients</groupId>
-      <artifactId>jedis</artifactId>
-      <version>4.4.0-m2</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.zaxxer</groupId>
-      <artifactId>HikariCP</artifactId>
-      <version>6.2.1</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>net.citizensnpcs</groupId>

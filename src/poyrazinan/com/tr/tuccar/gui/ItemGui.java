@@ -27,14 +27,12 @@ public class ItemGui {
 	
 	public static void createGui(Player player, String product, String category, int page)
 	{
-			
-		List<ProductStorage> list = DatabaseQueries.getCategoryItemList(product, category);
-		
 		Inventory gui = Bukkit.getServer().createInventory(player, 54, (Tuccar.color(getLang.getText("itemGui") + "&7 " + category + "/" + product + " #" + page)));
-		
 		
 		Bukkit.getScheduler().runTaskAsynchronously(Tuccar.instance, () ->
 		{
+			// Database sorgusunu async task içinde yap
+			List<ProductStorage> list = DatabaseQueries.getCategoryItemList(product, category);
 			
 			ItemStack pageEmpty = Item.defaultItem(getLang.getText("Gui.empty.name"),
 					getLang.getLore("Gui.empty.lore"),
@@ -136,9 +134,9 @@ public class ItemGui {
 					getLang.getLore("Gui.backToMenu.lore"),
 					Material.getMaterial(getLang.getText("Gui.backToMenu.material"))));
 			
+			// Envanter açma işlemini main thread'de yap
+			Bukkit.getScheduler().runTask(Tuccar.instance, () -> {player.openInventory(gui);});
 		});
-		Bukkit.getScheduler().runTask(Tuccar.instance, () -> {player.openInventory(gui);});
-		
 	}
 
 }

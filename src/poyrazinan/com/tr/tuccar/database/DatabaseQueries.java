@@ -23,7 +23,22 @@ import poyrazinan.com.tr.tuccar.commands.AddProduct.RegisterManager;
 
 public class DatabaseQueries {
 
+	private static boolean isYmlMode() {
+		String dbType = Tuccar.instance.getConfig().getString("Database.type", "SQLITE");
+		return dbType.equalsIgnoreCase("YML") || dbType.equalsIgnoreCase("YAML");
+	}
+
 	public static void createTable() {
+		if (!Tuccar.isDatabaseEnabled()) {
+			Bukkit.getLogger().info("[Tuccar] Database devre dışı, tablo oluşturma atlanıyor.");
+			return;
+		}
+		
+		// YML modunda SQL tablo oluşturmaya gerek yok
+		if (isYmlMode()) {
+			return;
+		}
+		
 		String dbType = Tuccar.instance.getConfig().getString("Database.type", "SQLITE");
 		String createTableSQL;
 
@@ -59,6 +74,16 @@ public class DatabaseQueries {
 
 	public static boolean registerProductToTable(String playerName, String category, String product, int stock, double price)
 	{
+		if (!Tuccar.isDatabaseEnabled()) {
+			Bukkit.getLogger().warning("[Tuccar] Database devre dışı - ürün kaydedilemedi!");
+			return false;
+		}
+		
+		// YML modunda YmlDatabase kullan
+		if (isYmlMode()) {
+			return YmlDatabase.registerProduct(playerName, category, product, stock, price);
+		}
+		
 		String SQL_QUERY = "INSERT INTO Tablo (username, category, product, stock, price) VALUES (?, ?, ?, ?, ?)";
         try (Connection con = ConnectionPool.getConnection()) {
             PreparedStatement pst = con.prepareStatement(SQL_QUERY);
@@ -80,6 +105,15 @@ public class DatabaseQueries {
 	}
 	
 	public static ProductCounts getProductInfos(String product, String category) {
+		if (!Tuccar.isDatabaseEnabled()) {
+			return new ProductCounts(0, 0);
+		}
+		
+		// YML modunda YmlDatabase kullan
+		if (isYmlMode()) {
+			return YmlDatabase.getProductInfos(product, category);
+		}
+		
 		double minPrice = 0;
 		int seller = 0;
 		String SQL_QUERY = "SELECT * FROM Tablo WHERE product = ? AND category = ? ORDER BY price ASC";
@@ -116,6 +150,15 @@ public class DatabaseQueries {
 	}
 	
 	public static double getMinimumPrice(String product, String category) {
+		if (!Tuccar.isDatabaseEnabled()) {
+			return 0;
+		}
+		
+		// YML modunda YmlDatabase kullan
+		if (isYmlMode()) {
+			return YmlDatabase.getMinimumPrice(product, category);
+		}
+		
 		double minPrice = 0;
 		String SQL_QUERY = "SELECT * FROM Tablo WHERE product = ? AND category = ? ORDER BY price ASC";
         try (Connection con = ConnectionPool.getConnection()) {
@@ -134,6 +177,15 @@ public class DatabaseQueries {
 	}
 	
 	public static List<ProductStorage> getAllListsOnProduct(String product) {
+		if (!Tuccar.isDatabaseEnabled()) {
+			return new ArrayList<ProductStorage>();
+		}
+		
+		// YML modunda YmlDatabase kullan
+		if (isYmlMode()) {
+			return YmlDatabase.getAllListsOnProduct(product);
+		}
+		
 		String SQL_QUERY = "SELECT * FROM Tablo WHERE product = ? ORDER BY price ASC";
 		List<ProductStorage> storage = new ArrayList<ProductStorage>();	
         try (Connection con = ConnectionPool.getConnection()) {
@@ -166,6 +218,15 @@ public class DatabaseQueries {
 	}
 	
 	public static List<ProductStorage> getCategoryItemList(String product, String category) {
+		if (!Tuccar.isDatabaseEnabled()) {
+			return new ArrayList<ProductStorage>();
+		}
+		
+		// YML modunda YmlDatabase kullan
+		if (isYmlMode()) {
+			return YmlDatabase.getCategoryItemList(product, category);
+		}
+		
 		String SQL_QUERY = "SELECT * FROM Tablo WHERE product = ? AND category = ? ORDER BY price ASC";
 		List<ProductStorage> storage = new ArrayList<ProductStorage>();	
         try (Connection con = ConnectionPool.getConnection()) {
@@ -198,6 +259,15 @@ public class DatabaseQueries {
 	}
 	
 	public static boolean isProductHasSeller(String product, String category) {
+		if (!Tuccar.isDatabaseEnabled()) {
+			return false;
+		}
+		
+		// YML modunda YmlDatabase kullan
+		if (isYmlMode()) {
+			return YmlDatabase.isProductHasSeller(product, category);
+		}
+		
 		String SQL_QUERY = "SELECT * FROM Tablo WHERE product = ? AND category = ? LIMIT 1";
 		boolean status = false;
         try (Connection con = ConnectionPool.getConnection()) {
@@ -216,6 +286,15 @@ public class DatabaseQueries {
 	}
 	
 	public static List<ProductStorage> getPlayerProducts(String player) {
+		if (!Tuccar.isDatabaseEnabled()) {
+			return new ArrayList<ProductStorage>();
+		}
+		
+		// YML modunda YmlDatabase kullan
+		if (isYmlMode()) {
+			return YmlDatabase.getPlayerProducts(player);
+		}
+		
 		String SQL_QUERY = "SELECT * FROM Tablo WHERE username = ? ORDER BY price ASC";
 		List<ProductStorage> storage = new ArrayList<ProductStorage>();	
         try (Connection con = ConnectionPool.getConnection()) {
@@ -266,6 +345,15 @@ public class DatabaseQueries {
 	}
 	
 	public static boolean checkStock(int id, int amount) {
+		if (!Tuccar.isDatabaseEnabled()) {
+			return false;
+		}
+		
+		// YML modunda YmlDatabase kullan
+		if (isYmlMode()) {
+			return YmlDatabase.checkStock(id, amount);
+		}
+		
 		String SQL_QUERY = "SELECT stock FROM Tablo WHERE id = ? AND stock >= ?";
 		boolean check = false;
         try (Connection con = ConnectionPool.getConnection()) {
@@ -282,6 +370,15 @@ public class DatabaseQueries {
 	}
 	
 	public static int getProductCount(int id) {
+		if (!Tuccar.isDatabaseEnabled()) {
+			return 0;
+		}
+		
+		// YML modunda YmlDatabase kullan
+		if (isYmlMode()) {
+			return YmlDatabase.getProductCount(id);
+		}
+		
 		String SQL_QUERY = "SELECT stock FROM Tablo WHERE id = ?";
 		int count = 0;
         try (Connection con = ConnectionPool.getConnection()) {
@@ -304,6 +401,16 @@ public class DatabaseQueries {
 	}
 	
 	public static void removeProductCount(int id, int count, String dataName, String category, double price){
+		if (!Tuccar.isDatabaseEnabled()) {
+			return;
+		}
+		
+		// YML modunda YmlDatabase kullan
+		if (isYmlMode()) {
+			YmlDatabase.removeProductCount(id, count, dataName, category, price);
+			return;
+		}
+		
 		String SQL_QUERY = "UPDATE Tablo SET stock = ? WHERE id = ?";
 		int newCount = getProductCount(id)-count;
         if (newCount < 1) {
@@ -348,6 +455,16 @@ public class DatabaseQueries {
 	}
 	
 	public static void addProductCount(int id, int count) {
+		if (!Tuccar.isDatabaseEnabled()) {
+			return;
+		}
+		
+		// YML modunda YmlDatabase kullan
+		if (isYmlMode()) {
+			YmlDatabase.addProductCount(id, count);
+			return;
+		}
+		
 		String SQL_QUERY = "UPDATE Tablo SET stock = ? WHERE id = ?";
     	try (Connection con = ConnectionPool.getConnection()) {
             PreparedStatement pst = con.prepareStatement(SQL_QUERY);
@@ -363,6 +480,16 @@ public class DatabaseQueries {
 	}
 	
 	public static void setProductPrice(int id, double price) {
+		if (!Tuccar.isDatabaseEnabled()) {
+			return;
+		}
+		
+		// YML modunda YmlDatabase kullan
+		if (isYmlMode()) {
+			YmlDatabase.setProductPrice(id, price);
+			return;
+		}
+		
 		String SQL_QUERY = "UPDATE Tablo SET price = ? WHERE id = ?";
     	try (Connection con = ConnectionPool.getConnection()) {
             PreparedStatement pst = con.prepareStatement(SQL_QUERY);
@@ -378,6 +505,15 @@ public class DatabaseQueries {
 	}
 	
 	public static ItemExistCheck getPlayerItem(String product, String category, String player) {
+		if (!Tuccar.isDatabaseEnabled()) {
+			return null;
+		}
+		
+		// YML modunda YmlDatabase kullan
+		if (isYmlMode()) {
+			return YmlDatabase.getPlayerItem(product, category, player);
+		}
+		
 		String SQL_QUERY = "SELECT * FROM Tablo WHERE product = ? AND category = ? AND username = ?";
 		ItemExistCheck storage = null;	
         try (Connection con = ConnectionPool.getConnection()) {

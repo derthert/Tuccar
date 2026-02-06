@@ -46,54 +46,92 @@ public class addStock {
 		Bukkit.getScheduler().runTaskAsynchronously(Tuccar.instance, () ->
 		{
 			
-			if (args.length == 2) {
+			// stokekle <miktar> [fiyat] veya stokekle hepsi [fiyat] veya stokekle el [fiyat]
+			if (args.length >= 2 && args.length <= 3) {
 				if (args[0].equalsIgnoreCase("stokekle")) {
 					if (toCheck != null && items.contains(toCheck)) {
+						
+						String dataName = Tuccar.itemToObject.get(toCheck).getDataName();
+						String category = Tuccar.itemToObject.get(toCheck).getItemCategory();
+						
+						// Fiyat parametresi varsa al
+						double price = 0;
+						if (args.length == 3) {
+							if (!ItemSelectionListener.isNumeric(args[2])) {
+								player.sendMessage(getLang.getText("Messages.inputMustInteger"));
+								return;
+							}
+							price = Double.valueOf(args[2]);
+						}
+						
 						if (args[1].equalsIgnoreCase("hepsi")) {
 							int amount = getAmount(player, player.getItemInHand());
-							ItemExistCheck item = DatabaseQueries.getPlayerItem(
-									Tuccar.itemToObject.get(toCheck).getDataName(),
-									Tuccar.itemToObject.get(toCheck).getItemCategory(), player.getName());
+							ItemExistCheck item = DatabaseQueries.getPlayerItem(dataName, category, player.getName());
+							
 							if (item == null) {
-
-								player.sendMessage(getLang.getText("Messages.couldntFindItem"));
-
-								return;
-
-							} else
+								// Kayıt yok - yeni kayıt oluştur
+								if (price <= 0) {
+									player.sendMessage(getLang.getText("Messages.needPrice"));
+									return;
+								}
+								if (price < Tuccar.instance.getConfig().getInt("Settings.minimumPrice")) {
+									player.sendMessage(getLang.getText("Messages.priceLow").replace("{min}",
+											String.valueOf(Tuccar.instance.getConfig().getInt("Settings.minimumPrice"))));
+									return;
+								}
+								DatabaseQueries.registerProductToTable(player.getName(), category, dataName, amount, price);
+								RegisterManager.updatePrice(toCheck, price);
+							} else {
 								DatabaseQueries.addProductCount(item.getID(), item.getStock() + amount);
+							}
 							removeItems(player.getInventory(), player.getItemInHand(), amount);
 							player.sendMessage(getLang.getText("Messages.listItem"));
+							
 						} else if (args[1].equalsIgnoreCase("el")) {
 							int amount = player.getItemInHand().getAmount();
-							ItemExistCheck item = DatabaseQueries.getPlayerItem(
-									Tuccar.itemToObject.get(toCheck).getDataName(),
-									Tuccar.itemToObject.get(toCheck).getItemCategory(), player.getName());
+							ItemExistCheck item = DatabaseQueries.getPlayerItem(dataName, category, player.getName());
+							
 							if (item == null) {
-
-								player.sendMessage(getLang.getText("Messages.couldntFindItem"));
-
-								return;
-
-							} else
+								// Kayıt yok - yeni kayıt oluştur
+								if (price <= 0) {
+									player.sendMessage(getLang.getText("Messages.needPrice"));
+									return;
+								}
+								if (price < Tuccar.instance.getConfig().getInt("Settings.minimumPrice")) {
+									player.sendMessage(getLang.getText("Messages.priceLow").replace("{min}",
+											String.valueOf(Tuccar.instance.getConfig().getInt("Settings.minimumPrice"))));
+									return;
+								}
+								DatabaseQueries.registerProductToTable(player.getName(), category, dataName, amount, price);
+								RegisterManager.updatePrice(toCheck, price);
+							} else {
 								DatabaseQueries.addProductCount(item.getID(), item.getStock() + amount);
+							}
 							player.getInventory().removeItem(player.getItemInHand());
 							player.sendMessage(getLang.getText("Messages.listItem"));
+							
 						} else {
 							if (ItemSelectionListener.isNumeric(args[1]) && Integer.valueOf(args[1]) >= 1) {
 								int amount = Integer.valueOf(args[1]);
 								if (getAmount(player, player.getItemInHand()) >= amount) {
-									ItemExistCheck item = DatabaseQueries.getPlayerItem(
-											Tuccar.itemToObject.get(toCheck).getDataName(),
-											Tuccar.itemToObject.get(toCheck).getItemCategory(), player.getName());
+									ItemExistCheck item = DatabaseQueries.getPlayerItem(dataName, category, player.getName());
+									
 									if (item == null) {
-
-										player.sendMessage(getLang.getText("Messages.couldntFindItem"));
-
-										return;
-
-									} else
+										// Kayıt yok - yeni kayıt oluştur
+										if (price <= 0) {
+											player.sendMessage(getLang.getText("Messages.needPrice"));
+											return;
+										}
+										if (price < Tuccar.instance.getConfig().getInt("Settings.minimumPrice")) {
+											player.sendMessage(getLang.getText("Messages.priceLow").replace("{min}",
+													String.valueOf(Tuccar.instance.getConfig().getInt("Settings.minimumPrice"))));
+											return;
+										}
+										DatabaseQueries.registerProductToTable(player.getName(), category, dataName, amount, price);
+										RegisterManager.updatePrice(toCheck, price);
+									} else {
 										DatabaseQueries.addProductCount(item.getID(), item.getStock() + amount);
+									}
 									ItemStack toRemove = new ItemStack(player.getItemInHand());
 									toRemove.setAmount(amount);
 									player.getInventory().removeItem(toRemove);
@@ -110,16 +148,17 @@ public class addStock {
 				if (args[0].equalsIgnoreCase("stokekle")) {
 					if (toCheck != null && items.contains(toCheck)) {
 						int amount = player.getItemInHand().getAmount();
-						ItemExistCheck item = DatabaseQueries.getPlayerItem(Tuccar.itemToObject.get(toCheck).getDataName(),
-								Tuccar.itemToObject.get(toCheck).getItemCategory(), player.getName());
+						String dataName = Tuccar.itemToObject.get(toCheck).getDataName();
+						String category = Tuccar.itemToObject.get(toCheck).getItemCategory();
+						ItemExistCheck item = DatabaseQueries.getPlayerItem(dataName, category, player.getName());
+						
 						if (item == null) {
-
-							player.sendMessage(getLang.getText("Messages.couldntFindItem"));
-
+							// Kayıt yok ve fiyat belirtilmemiş
+							player.sendMessage(getLang.getText("Messages.needPrice"));
 							return;
-
-						} else
+						} else {
 							DatabaseQueries.addProductCount(item.getID(), item.getStock() + amount);
+						}
 						player.getInventory().removeItem(player.getItemInHand());
 						player.sendMessage(getLang.getText("Messages.listItem"));
 					} else

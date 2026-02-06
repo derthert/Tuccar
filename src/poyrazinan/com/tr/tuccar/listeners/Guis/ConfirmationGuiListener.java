@@ -62,10 +62,13 @@ public class ConfirmationGuiListener implements Listener {
 
 					double price = buyAmount*item.getPrice();
 
-					int yesSlot = Tuccar.instance.getConfig().getInt("confirmation.yesItem.slot");
-					int noSlot = Tuccar.instance.getConfig().getInt("confirmation.noItem.slot");
+					// Varsayılan slot değerleri (config'de tanımlı değilse)
+					int yesSlot = Tuccar.instance.getConfig().getInt("confirmation.yesItem.slot", 11);
+					int noSlot = Tuccar.instance.getConfig().getInt("confirmation.noItem.slot", 15);
+					int itemSlot = 4; // Ortadaki ürün slotu
 
-					if (e.getSlot() == yesSlot) {
+					// Onay butonu VEYA ortadaki iteme tıklanırsa onay ver
+					if (e.getSlot() == yesSlot || e.getSlot() == itemSlot) {
 						if (DatabaseQueries.checkStock(itemID, buyAmount)) {
 
 							int emptySlots = getEmptySlotsAmount(player);

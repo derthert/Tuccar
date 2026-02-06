@@ -31,6 +31,10 @@
                     <artifactSet>
                         <includes>
                             <include>org.json:*:*:*</include>
+                            <include>redis.clients:jedis:*:*</include>
+                            <include>org.apache.commons:commons-pool2:*:*</include>
+                            <include>com.zaxxer:HikariCP:*:*</include>
+                            <include>org.slf4j:slf4j-api:*:*</include>
                         </includes>
                     </artifactSet>
                 </configuration>

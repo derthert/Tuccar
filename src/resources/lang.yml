@@ -16,6 +16,7 @@ Messages:
   rePriceSuccess: ' &6Tüccar &8▸ &aYeniden fiyat ayarlaması tamamlandı.'
   cannotBuyOwnItem: ' &6Tüccar &8▸ &cKendi ürününü satın alamazsın!'
   couldntFindItem: ' &6Tüccar &8▸ &cBöyle bir ürün bulunamadı!'
+  needPrice: ' &6Tüccar &8▸ &cİlk kayıt için fiyat belirtmelisin! &7/tüccar stokekle <miktar> <fiyat>'
   setNpcSuccess: ' &6Tüccar &8▸ &aTüccar NPCsi &2başarıyla &akondu.'
   reload: ' &6Tüccar &8▸ &aYenileme işlemi &2başarıyla &agerçekleştirildi.'
   help:

@@ -28,6 +28,7 @@ import poyrazinan.com.tr.tuccar.Utils.Storage.ProductCategoryStorage;
 import poyrazinan.com.tr.tuccar.Utils.Storage.GuiUtils.ProductCounts;
 import poyrazinan.com.tr.tuccar.commands.CommandRegister;
 import poyrazinan.com.tr.tuccar.database.ConnectionPool;
+import poyrazinan.com.tr.tuccar.database.YmlDatabase;
 import poyrazinan.com.tr.tuccar.database.DatabaseQueries;
 import poyrazinan.com.tr.tuccar.database.RedisManager;
 import poyrazinan.com.tr.tuccar.listeners.ListenerRegister;
@@ -43,6 +44,7 @@ public class Tuccar extends JavaPlugin {
 	public static HashMap<String, ProductCounts> productInfo = new HashMap<String, ProductCounts>();
 	private static boolean redisEnabled = false;
 	public static HashMap<Integer, CustomItemCache> customItems = new HashMap<Integer, CustomItemCache>();
+	private static boolean databaseEnabled = true;
 
 	public void onEnable() {
 		instance = this;
@@ -53,24 +55,45 @@ public class Tuccar extends JavaPlugin {
 		new ListenerRegister();
 		safeReload();
 		MetricLoader();
-		// Veritabanı bağlantısını başlat
-		try {
-			ConnectionPool.initialize();
-			getLogger().info("Veritabanı bağlantısı başarıyla kuruldu!");
-		} catch (Exception e) {
-			getLogger().severe("Veritabanı bağlantısı kurulamadı: " + e.getMessage());
-			getServer().getPluginManager().disablePlugin(this);
-			return;
-		}
+		
+		// Database tipi kontrolü
+		String dbType = getConfig().getString("Database.type", "SQLITE");
+		if (dbType.equalsIgnoreCase("NONE")) {
+			databaseEnabled = false;
+			getLogger().warning("⚠ Database tipi NONE olarak ayarlı! Veritabanı özellikleri devre dışı.");
+			getLogger().warning("⚠ Bu mod sadece test amaçlıdır, üretim ortamında kullanmayın!");
+		} else if (dbType.equalsIgnoreCase("YML") || dbType.equalsIgnoreCase("YAML")) {
+			databaseEnabled = true;
+			// YML database başlat
+			try {
+				YmlDatabase.initialize();
+				getLogger().info("YML Database başarıyla başlatıldı!");
+			} catch (Exception e) {
+				getLogger().severe("YML Database başlatılamadı: " + e.getMessage());
+				getServer().getPluginManager().disablePlugin(this);
+				return;
+			}
+		} else {
+			databaseEnabled = true;
+			// SQL Veritabanı bağlantısını başlat
+			try {
+				ConnectionPool.initialize();
+				getLogger().info("Veritabanı bağlantısı başarıyla kuruldu!");
+			} catch (Exception e) {
+				getLogger().severe("Veritabanı bağlantısı kurulamadı: " + e.getMessage());
+				getServer().getPluginManager().disablePlugin(this);
+				return;
+			}
 
-		// Tabloları oluştur
-		try {
-			DatabaseQueries.createTable();
-			getLogger().info("Veritabanı tabloları kontrol edildi/oluşturuldu!");
-		} catch (Exception e) {
-			getLogger().severe("Veritabanı tabloları oluşturulurken hata: " + e.getMessage());
-			getServer().getPluginManager().disablePlugin(this);
-			return;
+			// Tabloları oluştur
+			try {
+				DatabaseQueries.createTable();
+				getLogger().info("Veritabanı tabloları kontrol edildi/oluşturuldu!");
+			} catch (Exception e) {
+				getLogger().severe("Veritabanı tabloları oluşturulurken hata: " + e.getMessage());
+				getServer().getPluginManager().disablePlugin(this);
+				return;
+			}
 		}
 
 		redisEnabled = getConfig().getBoolean("Redis.enabled", false);
@@ -89,14 +112,20 @@ public class Tuccar extends JavaPlugin {
 		if (redisEnabled) {
 			RedisManager.shutdown();
 		}
-		try {
-			ConnectionPool.closePool();
-		} catch (Exception e) {
-			getLogger().severe("Veritabanı bağlantısı kapatılırken hata: " + e.getMessage());
+		if (databaseEnabled) {
+			try {
+				ConnectionPool.closePool();
+			} catch (Exception e) {
+				getLogger().severe("Veritabanı bağlantısı kapatılırken hata: " + e.getMessage());
+			}
 		}
 	}
 	public static boolean isRedisEnabled() {
 		return redisEnabled;
+	}
+	
+	public static boolean isDatabaseEnabled() {
+		return databaseEnabled;
 	}
 
 	@SuppressWarnings({})
